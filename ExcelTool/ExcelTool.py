@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import os
+from openpyxl import *
 import openpyxl
-
+import traceback
+from openpyxl.styles import colors
+from openpyxl.styles import Color,Font,Side,PatternFill,Border
 
 class SrcCell():
     def __init__(self,val):
@@ -204,7 +207,247 @@ class ExcelService(object):
 def main():
     service = ExcelService()
     service.close()
+
+def getDiffRows(sheet,col):
+    rowValid = {}
+    diffCells = []
+    ret = []
+    for row in range(1,sheet.max_row+1):
+        rowValid[row]=True
+        
+    for row in range(1,sheet.max_row+1):
+        cell = getCell(sheet,row,col)
+        findFlag = False
+        equalRow = None
+        for diffCell in diffCells:
+            if diffCell.value == cell.value:
+                findFlag= True
+                equalRow = diffCell.row
+                break
+
+        if findFlag ==False:
+            diffCells.append(cell)
+        else:
+            rowValid[row]=False
+            rowValid[equalRow]=False
+    for row in range(1,sheet.max_row+1):
+        if rowValid[row] == True:
+            ret.append(row)
+    return ret
+            
+    
+
+
+
+def isSheetNamesInBook(book,*sheetNames):
+    if len(sheetNames)==0:
+        return False
+    bookSheetNames = book.get_sheet_names()
+    for sheetName in sheetNames:
+        findFlag = False
+        for bookSheetName in bookSheetNames:
+            if sheetName == bookSheetName:
+                findFlag=True
+                break
+        if findFlag == False:
+            return False
+    return True
+        
+    
+def isNum(val):
+    if val == None:
+        return False
+    try:
+        int(val)
+    except:
+        try:
+            float(val)
+        except:
+            return False
+    return True
+
+def getNumColIndex(sheet):
+
+    maxCol = sheet.max_column
+    maxRow = sheet.max_row
+
+    totalCount = 0
+    numIndex = 0
+    for colIndex in range(1,maxCol+1):
+        numCount = 0
+        strCount = 0
+        for rowIndex in range(1,maxRow+1):
+            val = sheet.cell(row=rowIndex,column=colIndex).value
+
+            if val == None:
+                continue
+            
+            if isNum(val):
+                numCount +=1
+            else:
+                if val.strip() != "":
+                    strCount +=1
+        if numCount >= 1 and strCount == 0:
+            totalCount +=1
+            numIndex = colIndex
+
+    if totalCount == 0:
+        raise Exception("需要有1列数字:"+sheetName)
+
+    if totalCount >1:
+        raise Exception("%s有%d列数字:" % (sheetName,totalCount))
+
+    return numIndex
+    
+    
+
+def loadBook(path):
+    return openpyxl.reader.excel.load_workbook(path, read_only=True, \
+        keep_vba=False, data_only=True, guess_types=False, keep_links=False)
+
+def createBook():
+    return openpyxl.workbook.workbook.Workbook(write_only=False)
+
+def getVal(sheet,row,col):
+    return sheet.cell(row=row,column=col).value
+
+def setVal(sheet,row,col,val):
+    sheet.cell(row=row,column=col).value = val
+
+def getCell(sheet,row,col):
+    return sheet.cell(row=row,column=col)
+
+def do():
+    try:
+        if not os.path.isfile("in.xlsx"):
+            raise Exception("in.xlsx不存在")
+        if not os.access("in.xlsx",os.R_OK):
+            raise Exception("in.xlsx不可读")
+
+
+        inBook = loadBook("in.xlsx")
+        
+        if not isSheetNamesInBook(inBook,"Sheet1"):
+            raise Exception("in.xlsx中不存在Sheet1")
+        if not isSheetNamesInBook(inBook,"Sheet2"):
+            raise Exception("in.xlsx中不存在Sheet2")
+
+        inSheet1 = inBook["Sheet1"]
+        
+        inSheet2 = inBook["Sheet2"]
+        
+        sheet1NumColIndex = getNumColIndex(inSheet1)
+        sheet2NumColIndex = getNumColIndex(inSheet2)
+
+        outBook = createBook()
+        outSheet = outBook.active
+        outSheetCount = 0
+
+        sheet1RowDone = {}
+        sheet2RowDone = {}
+        for sheet1RowIndex in range(1,inSheet1.max_row+1):
+            sheet1RowDone[sheet1RowIndex]=False
+        for sheet2RowIndex in range(1,inSheet2.max_row+1):
+            sheet2RowDone[sheet2RowIndex]=False
+        
+
+        thinSide = Side(border_style="thin", color="000000")
+        thinBorder = Border(top=thinSide, left=thinSide, \
+                            right=thinSide, bottom=thinSide)
+
+        sheet1DiffRows = getDiffRows(inSheet1,sheet1NumColIndex)
+        sheet2DiffRows = getDiffRows(inSheet2,sheet2NumColIndex)
+
+
+        for sheet1RowIndex in sheet1DiffRows:
+            if sheet1RowDone[sheet1RowIndex] == True:
+                continue
+            for sheet2RowIndex in sheet2DiffRows:
+                if sheet2RowDone[sheet2RowIndex] == True:
+                    continue
+                
+                sheet1Val = getVal(inSheet1,sheet1RowIndex,sheet1NumColIndex)
+
+                sheet2Val = getVal(inSheet2,sheet2RowIndex,sheet2NumColIndex)
+                if sheet1Val == sheet2Val:
+                    sheet1RowDone[sheet1RowIndex] = True
+                    sheet2RowDone[sheet2RowIndex] = True
+                    outSheetCount +=1
+                    for sheet1ColIndex in range(1,inSheet1.max_column+1):
+                        sheet1Cell = getCell(inSheet1,sheet1RowIndex,\
+                                             sheet1ColIndex)
+                        outCell = getCell(outSheet,outSheetCount,\
+                                             sheet1ColIndex)
+                        outCell.value = sheet1Cell.value
+
+                        outCell.font = Font(color=colors.BLACK)
+                        outCell.fill = PatternFill(fill_type = "solid",\
+                            start_color="CCFFFF",end_color="CCFFFF")
+                        outCell.border=thinBorder;
+                        
+
+                    outSheetCount +=1
+                    for sheet2ColIndex in range(1,inSheet2.max_column+1):
+                        sheet2Cell = getCell(inSheet2,sheet2RowIndex,\
+                                             sheet2ColIndex)
+                        
+                        outCell = getCell(outSheet,outSheetCount,\
+                                             sheet2ColIndex)
+                        outCell.value = sheet2Cell.value
+                        
+                        outCell.font = Font(color=colors.BLACK)
+                        outCell.fill = PatternFill(fill_type = "solid",\
+                            start_color="FFCCFF",end_color="FFCCFF")
+                        outCell.border=thinBorder;
+        
+        for sheet1RowIndex in range(1,inSheet1.max_row+1):
+            if sheet1RowDone[sheet1RowIndex] == True:
+                
+                continue
+            
+            outSheetCount +=1
+            for sheet1ColIndex in range(1,inSheet1.max_column+1):
+                sheet1Cell = getCell(inSheet1,sheet1RowIndex,\
+                                             sheet1ColIndex)
+                outCell = getCell(outSheet,outSheetCount,\
+                                             sheet1ColIndex)
+                outCell.value = sheet1Cell.value
+
+                outCell.font = Font(color=colors.BLACK)
+                outCell.fill = PatternFill(fill_type = "solid",\
+                            start_color="CCFFFF",end_color="CCFFFF")
+                outCell.border=thinBorder;
+                        
+
+
+        for sheet2RowIndex in range(1,inSheet2.max_row+1):
+            if sheet2RowDone[sheet2RowIndex] == True:
+                continue
+                        
+
+            outSheetCount +=1
+            for sheet2ColIndex in range(1,inSheet2.max_column+1):
+                sheet2Cell = getCell(inSheet2,sheet2RowIndex,\
+                                             sheet2ColIndex)
+                        
+                outCell = getCell(outSheet,outSheetCount,\
+                                             sheet2ColIndex)
+                outCell.value = sheet2Cell.value
+                        
+                outCell.font = Font(color=colors.BLACK)
+                outCell.fill = PatternFill(fill_type = "solid",\
+                            start_color="FFCCFF",end_color="FFCCFF")
+                outCell.border=thinBorder;
+        
+        
+        outBook.save("out.xlsx")
+        inBook.close()
+        outBook.close()
+        print("success")
+    except Exception:
+        print(traceback.format_exc())
+        
     
 if __name__=="__main__":
-    run()
+    do()
 
