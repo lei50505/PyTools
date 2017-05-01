@@ -7,6 +7,7 @@ sys.path.append("../lib")
 import traceback
 
 from OpenpyxlUtils import *
+import time
 
 
 
@@ -202,7 +203,7 @@ def do():
         
         
 
-    #time.sleep(2)
+    time.sleep(2)
         
     
 if __name__=="__main__":
