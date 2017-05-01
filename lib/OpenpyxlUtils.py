@@ -5,6 +5,7 @@ import sys
 sys.path.append(".")
 
 from openpyxl import *
+from openpyxl.styles import *
 
 from OsUtils import *
 
@@ -15,7 +16,7 @@ class Cell():
 
     def getNumVal(self):
         if isinstance(self.val,float):
-            return val
+            return self.val
 
         if isinstance(self.val,int):
             return float(self.val)
@@ -41,6 +42,26 @@ class Cell():
             return None
             
         return None
+    def setVal(self,val):
+        self.cell.value = val
+        self.val = val
+
+    def setRed(self):
+        self.cell.fill = PatternFill(fill_type = "solid",\
+                            start_color="FFCCFF",end_color="FFCCFF")
+
+        self.setBorder()
+
+    def setBlue(self):
+        self.cell.fill = PatternFill(fill_type = "solid",\
+                            start_color="CCFFFF",end_color="CCFFFF")
+        self.setBorder()
+        
+    def setBorder(self):
+        thinSide = Side(border_style="thin", color="000000")
+        thinBorder = Border(top=thinSide, left=thinSide, \
+                            right=thinSide, bottom=thinSide)
+        self.cell.border=thinBorder
         
 
 class Sheet():
@@ -125,34 +146,6 @@ class Sheet():
             if count == 1:
                 self.diffNumRows.append(numRow)
 
-    def getDiffRows(self):
-        rowValid = {}
-        diffCells = []
-        ret = []
-        for row in range(1,sheet.max_row+1):
-            rowValid[row]=True
-            
-        for row in range(1,sheet.max_row+1):
-            cell = getCell(sheet,row,col)
-            if type(cell) == EmptyCell:
-                continue
-            findFlag = False
-            equalRow = None
-            for diffCell in diffCells:
-                if diffCell.value == cell.value:
-                    findFlag= True
-                    equalRow = diffCell.row
-                    break
-
-            if findFlag ==False:
-                diffCells.append(cell)
-            else:
-                rowValid[row]=False
-                rowValid[equalRow]=False
-        for row in range(1,sheet.max_row+1):
-            if rowValid[row] == True:
-                ret.append(row)
-        return ret
 
     def getRowListByVal(self,val):
         val = float(val)
@@ -166,8 +159,15 @@ class Sheet():
         
 
 class Book():
-    def __init__(self,book):
+    def __init__(self,book,mode):
         self.book=book
+
+        self.active = None
+        if mode == "create":
+            activeSheet = book.active
+            self.active = Sheet(activeSheet)
+
+        
         
     def sheet(self,sheetName):
         bookSheet = self.book[sheetName]
@@ -184,6 +184,9 @@ class Book():
                 return False
         return True
 
+    def save(self,path):
+        self.book.save(path)
+
     def close(self):
         if isinstance(self.book,Workbook):
             self.book.close()
@@ -191,7 +194,7 @@ class Book():
 
 def createBook():
     workBook =  Workbook(write_only=False)
-    book = Book(workBook)
+    book = Book(workBook,"create")
     return book
 
 def loadBook(filePath):
@@ -199,7 +202,7 @@ def loadBook(filePath):
         return None
     workBook = load_workbook(filePath, read_only=True, keep_vba=False,\
                          data_only=True,guess_types=False, keep_links=False)
-    book = Book(workBook)
+    book = Book(workBook,"load")
     return book
 
 
@@ -218,7 +221,10 @@ if __name__ == "__main__":
 
     print(book2.sheet("Sheet1").getRowListByVal(54))
 
-    
+    sheet = book1.active
+    sheet.cell(1,1).setBlue()
+
+    book1.save("out.xlsx")
 
     book1.close()
     book2.close()
