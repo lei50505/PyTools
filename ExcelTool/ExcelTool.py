@@ -7,206 +7,36 @@ import openpyxl
 import traceback
 from openpyxl.styles import colors
 from openpyxl.styles import Color,Font,Side,PatternFill,Border
+from openpyxl.cell.read_only import EmptyCell,ReadOnlyCell
+from openpyxl.workbook.workbook import Workbook
+import time
 
-class SrcCell():
-    def __init__(self,val):
-        self.val=val
-        pass
-    def getVal(self):
-        return self.val
 
-class SrcRow():
-    def __init__(self):
-        pass
-    def getNumCell(self):
-        pass
-    def getVal(self):
-        pass
-    def EqualVal(self):
-        pass
 
-class SrcSheet():
-    def __init__(self,sheet):
-        self.rows=[]
-        maxRow = sheet.max_row
-        for index in range(1,maxRow+1):
-            row = SrcRow()
-            self.rows.append(SrcRow)
-        self.rows = rows
-        pass
-    def getRow(self):
-        pass
-    def countNumCell(self):
-        pass
-    def setRowDone(self):
-        pass
-    def sort(self):
-        pass
-    def getDiffRows(self):
-        pass
-    def getFreeRows(self):
-        pass
-    def getDupliVals(self):
-        pass
-    def getRowsByVal(self):
-        pass
-    def getRowsInTotal(self):
-        pass
+def getRowsByVal(val,cellList):
+    rows = []
+    if not isinstance(val,float):
+        return rows
+    if not isinstance(cellList,list):
+        return rows
+    
+    for i,cell in enumerate(cellList):
+        v = getCellValIfNum(cell)
+        if not isinstance(v,float):
+            continue
+        if v == val:
+            rows.append(cell.row )
+    return rows
     
 
-class SrcBook():
-    def __init__(self,path):
-        if not os.path.isfile(path):
-            raise MyError("源文件 %s 不存在" % path)
-        book = openpyxl.load_workbook(path,read_only=True, \
-                                    keep_vba=False, data_only=True, \
-                                    guess_types=False, keep_links=False)
-        
-        self.sheet1 =SrcSheet(book["Sheet1"])
-        self.sheet2 =SrcSheet(book["Sheet2"])
+def getDiffRowss(numSet,numList):
+    if not isinstance(numSet,set):
+        return None
+    if not isinstance(numList,list):
+        return None
+
+    for i,num in enumerate(numList):
         pass
-    def getSheetByName(self,sheetName):
-        pass
-    def addSheet(self):
-        pass
-    def findEqual(self):
-        pass
-    def compSheet(self):
-        pass
-
-class TarCell():
-    def __init__(self,color):
-        self.color = color
-        pass
-    def setColor(self,color):
-        self.color=color
-        pass
-
-class TarRow():
-    def __init__(self,cells):
-        self.cells=cells
-        pass
-    def setColor(self,color):
-        for cell in cells:
-            cell.setColor(color)
-        pass
-
-class TarSheet():
-    def __init__(self,rows):
-        self.rows=rows
-        pass
-    def addRow(self,row):
-        self.rows.append(row)
-        row.setColor(color)
-        pass
-
-class TarBook():
-    def __init__(self):
-
-        pass
-    def getSheet(self):
-        pass
-    def write(self,path):
-        pass
-
-def run():
-    srcBook = SrcBook("in.xlsx")
-    srcSheet1 = srcBook.getSheet()
-    srcSheet2 = srcBook.getSheet()
-
-    tarBook = TarBook()
-    tarSheet = tarBook.getSheet()
-
-    for row1 in sheet1.getDiffRows():
-        for row2 in sheet2.getDiffRows():
-            if row1.equalVal(row2):
-                tarSheet.addRow(row1,color1)
-                tarSheet.addRow(row2,color2)
-                row1.done()
-                row2.done()
-    for val in sheet1.getDupliVals():
-
-        if sheet1.countNumCell(val)==sheet2.countNumCell(val):
-            for row1 in sheet1.getRowsByVal(row1Val):
-                tarSheet.addRow(row1,color1)
-                row1.done()
-            for row2 in sheet1.getRowsByVal(row1Val):
-                tarSheet.addRow(row2,color2)
-                row2.done()
-
-    for row1 in sheet1.getDiffRows():
-        rows = sheet2.getRowsInTotal(row1.getVal())
-        if len(rows) == 0:
-            continue
-        tarSheet.addRow(row1,color1)
-        row1.done()
-        for row in rows:
-            tarSheet.addRow(row2,color2)
-            row2.done()
-
-    for row2 in sheet2.getDiffRows():
-        rows = sheet1.getRowsInTotal(row2.getVal())
-        if len(rows) == 0:
-            continue
-        tarSheet.addRow(row2,color2)
-        row2.done()
-        for row in rows:
-            tarSheet.addRow(row1,color1)
-            row1.done()
-                
-
-    for row1 in sheet1.getFreeRows():
-        tarSheet.addRow(row1,color1)
-        row1.done()
-
-    for row2 in sheet2.getFreeRows():
-        tarSheet.addRow(row2,color2)
-        row2.done()
-
-
-    tarBook.write(tarPath)
-    
-
-class ExcelStat():
-    def __init__(self,index,val):
-        self.index=index
-        self.val=val
-        self.done=False
-
-class MyError(Exception):
-    pass
-
-class ExcelService(object):
-    def __init__(self,srcPath="in.xlsx",tarPath="out.xlsx"):
-        if not os.path.isfile(srcPath):
-            raise MyError("源文件 %s 不存在" % srcPath)
-        if os.path.isfile(tarPath):
-            raise MyError("请删除目标文件 %s" % tarPath)
-        self.srcPath = srcPath
-        self.tarPath = tarPath
-
-        self.srcBook = openpyxl.load_workbook(srcPath,read_only=True, \
-                                    keep_vba=False, data_only=True, \
-                                    guess_types=False, keep_links=False)
-        self.tarBook = openpyxl.Workbook(write_only=True)
-        
-
-    def saveTarBook(self):
-        self.tarBook.save(self.tarPath)
-
-    def close(self):
-        self.srcBook.close()
-        self.tarBook.close()
-
-        self.srcBook = None
-        self.tarBook = None
-
-        
-        
-
-def main():
-    service = ExcelService()
-    service.close()
 
 def getDiffRows(sheet,col):
     rowValid = {}
@@ -217,6 +47,8 @@ def getDiffRows(sheet,col):
         
     for row in range(1,sheet.max_row+1):
         cell = getCell(sheet,row,col)
+        if type(cell) == EmptyCell:
+            continue
         findFlag = False
         equalRow = None
         for diffCell in diffCells:
@@ -235,27 +67,44 @@ def getDiffRows(sheet,col):
             ret.append(row)
     return ret
             
+def getCellValIfNum(cell):
     
+    if not isinstance(cell,ReadOnlyCell):
+        return None
+
+    val = cell.value
+
+    return getValIfNum(val)
 
 
 
 def isSheetNamesInBook(book,*sheetNames):
-    if len(sheetNames)==0:
+    if not isinstance(book,Workbook):
         return False
+    
     bookSheetNames = book.get_sheet_names()
     for sheetName in sheetNames:
-        findFlag = False
-        for bookSheetName in bookSheetNames:
-            if sheetName == bookSheetName:
-                findFlag=True
-                break
-        if findFlag == False:
+        if not isinstance(sheetName,str):
+            return False
+        if sheetName not in bookSheetNames:
             return False
     return True
         
     
 def isNum(val):
-    if val == None:
+    v = getValIfNum(val)
+    if v is None:
+        return False
+    return True
+
+def cellIsNum(cell):
+    if cell == None:
+        return False
+    if type(cell) == EmptyCell:
+        return False
+
+    val = cell.value
+    if val == None or str(val).strip() == "":
         return False
     try:
         int(val)
@@ -265,6 +114,25 @@ def isNum(val):
         except:
             return False
     return True
+
+def getValIfNum(val):
+
+    if isinstance(val,float):
+        return val
+
+    if isinstance(val,int):
+        return float(val)
+
+    if isinstance(val,str):
+        try:
+            return float(val)
+            
+        except:
+
+            return None
+    
+    return None
+    
 
 def getNumColIndex(sheet):
 
@@ -317,13 +185,68 @@ def setVal(sheet,row,col,val):
 def getCell(sheet,row,col):
     return sheet.cell(row=row,column=col)
 
+class MyCell(object):
+    def __init__(self,val):
+        self.cnt=1
+        self.val=val
+
+def getSameValues(sheet,col):
+    ret = []
+    sameCells = []
+    for row in range(1,sheet.max_row):
+        cell = getCell(sheet,row,col)
+        if type(cell) == EmptyCell:
+            continue
+        f = False
+        for i,sameCell in enumerate(sameCells):
+
+            if sameCell.value == cell.value:
+                rflag = False
+                for idx,r in enumerate(ret):
+                    if r.val == cell.value:
+                        
+                        r.cnt +=1
+                        print(r.cnt)
+                        sameCells[idx].cnt +=1
+                        rflag = True
+                        break
+                if rflag == False:
+                    same = MyCell(cell.value)
+                    ret.append(same)
+                f=True
+                break
+        if f == False:
+            sameCells.append(cell)
+    return ret
+            
+
+sheet1NumValSet = set()
+sheet2NumValSet = set()
+sheet1NumValList = []
+sheet2NumValList = []
+sheet1NumCellList = []
+sheet2NumCellList = []
+sheet1MaxRow = 0
+sheet1MaxCol = 0
+sheet2MaxRow = 0
+sheet2MaxCol = 0
+inBook = None
+outBook = None
+
 def do():
+    global sheet1NumValSet
+    global sheet2NumValSet
+    global sheet1NumValList
+    global sheet2NumValList
+    global sheet1MaxRow
+    global sheet1MaxCol
+    global sheet2MaxRow
+    global sheet2MaxCol
+    global inBook
+    global outBook
     try:
         if not os.path.isfile("in.xlsx"):
             raise Exception("in.xlsx不存在")
-        if not os.access("in.xlsx",os.R_OK):
-            raise Exception("in.xlsx不可读")
-
 
         inBook = loadBook("in.xlsx")
         
@@ -345,10 +268,30 @@ def do():
 
         sheet1RowDone = {}
         sheet2RowDone = {}
-        for sheet1RowIndex in range(1,inSheet1.max_row+1):
-            sheet1RowDone[sheet1RowIndex]=False
-        for sheet2RowIndex in range(1,inSheet2.max_row+1):
-            sheet2RowDone[sheet2RowIndex]=False
+
+        sheet1MaxRow = inSheet1.max_row
+        sheet1MaxCol = inSheet1.max_column
+        sheet2MaxRow = inSheet2.max_row
+        sheet2MaxCol = inSheet2.max_column
+        
+        for rowIndex in range(1,sheet1MaxRow+1):
+            sheet1RowDone[rowIndex]=False
+            cell = getCell(inSheet1,rowIndex,sheet1NumColIndex)
+            val = getCellValIfNum(cell)
+            if isinstance(val,float):
+                sheet1NumValSet.add(val)
+                sheet1NumValList.append(val)
+                sheet1NumCellList.append(cell)
+        for rowIndex in range(1,sheet2MaxRow+1):
+            sheet2RowDone[rowIndex]=False
+            cell = getCell(inSheet2,rowIndex,sheet2NumColIndex)
+            val = getCellValIfNum(cell)
+            if isinstance(val,float):
+                sheet2NumValSet.add(val)
+                sheet2NumValList.append(val)
+                sheet2NumCellList.append(cell)
+
+        print(sheet1NumValList)
         
 
         thinSide = Side(border_style="thin", color="000000")
@@ -359,17 +302,27 @@ def do():
         sheet2DiffRows = getDiffRows(inSheet2,sheet2NumColIndex)
 
 
+        
+
+
         for sheet1RowIndex in sheet1DiffRows:
             if sheet1RowDone[sheet1RowIndex] == True:
+                continue
+            sheet1ValCell = getCell(inSheet1,sheet1RowIndex,\
+                                        sheet1NumColIndex)
+            if type(sheet1ValCell) == EmptyCell:
                 continue
             for sheet2RowIndex in sheet2DiffRows:
                 if sheet2RowDone[sheet2RowIndex] == True:
                     continue
                 
-                sheet1Val = getVal(inSheet1,sheet1RowIndex,sheet1NumColIndex)
+                
 
-                sheet2Val = getVal(inSheet2,sheet2RowIndex,sheet2NumColIndex)
-                if sheet1Val == sheet2Val:
+                sheet2ValCell = getCell(inSheet2,sheet2RowIndex,\
+                                        sheet2NumColIndex)
+                if type(sheet2ValCell) == EmptyCell:
+                    continue
+                if sheet1ValCell.value == sheet2ValCell.value:
                     sheet1RowDone[sheet1RowIndex] = True
                     sheet2RowDone[sheet2RowIndex] = True
                     outSheetCount +=1
@@ -399,6 +352,14 @@ def do():
                         outCell.fill = PatternFill(fill_type = "solid",\
                             start_color="FFCCFF",end_color="FFCCFF")
                         outCell.border=thinBorder;
+
+
+        sheet1SameVals = getSameValues(inSheet1,sheet1NumColIndex)
+        sheet2SameVals = getSameValues(inSheet2,sheet2NumColIndex)
+
+        for sheet1SameVal in sheet1SameVals:
+            print(sheet1SameVal.cnt)
+        
         
         for sheet1RowIndex in range(1,inSheet1.max_row+1):
             if sheet1RowDone[sheet1RowIndex] == True:
@@ -445,7 +406,17 @@ def do():
         outBook.close()
         print("success")
     except Exception:
+        
         print(traceback.format_exc())
+    finally:
+        if isinstance(inBook,Workbook):
+            inBook.close()
+        if isinstance(outBook,Workbook):
+            outBook.close()
+        
+        
+
+    #time.sleep(2)
         
     
 if __name__=="__main__":
