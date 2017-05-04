@@ -6,8 +6,8 @@ sys.path.append(".")
 
 from openpyxl import *
 from openpyxl.styles import *
+from openpyxl.styles.numbers import *
 
-from OsUtils import *
 
 class Cell():
     def __init__(self,cell):
@@ -43,8 +43,10 @@ class Cell():
             
         return None
     def setVal(self,val):
+        #self.cell.number_format = numbers.FORMAT_TEXT
         self.cell.value = val
         self.val = val
+        
 
     def setRed(self):
         self.cell.fill = PatternFill(fill_type = "solid",\

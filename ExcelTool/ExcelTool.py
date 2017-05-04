@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 sys.path.append("../lib")
 
@@ -29,8 +30,14 @@ def do():
             raise Exception("in.xlsx中不存在Sheet2")
 
         inSheet1 = inBook.sheet("Sheet1")
+
+        if inSheet1.numColIndex is None:
+            raise Exception("in.xlsx中Sheet1没有数字列")
         
         inSheet2 = inBook.sheet("Sheet2")
+
+        if inSheet2.numColIndex is None:
+            raise Exception("in.xlsx中Sheet2没有数字列")
         
         outBook = createBook()
         outSheet = outBook.active
@@ -54,7 +61,9 @@ def do():
 
         outSheetCount = 0
 
+
         for sheet1RowIndex in inSheet1.diffNumRows:
+
             if sheet1RowDone[sheet1RowIndex] == True:
                 continue
 
@@ -95,6 +104,8 @@ def do():
 
         vals = []
 
+        
+
         for sheet1Val in inSheet1.numValSet:
             sheet1Count = inSheet1.numValDict[sheet1Val]
             if sheet1Count ==1:
@@ -112,8 +123,10 @@ def do():
 
                 vals.append(sheet1Val)
 
+
+
         for val in vals:
-                
+
 
             for sheet1RowIndex in inSheet1.getRowListByVal(val):
                 if sheet1RowDone[sheet1RowIndex] == True:
@@ -156,6 +169,7 @@ def do():
         
         
         for sheet1RowIndex in range(1,inSheet1.maxRow+1):
+
             if sheet1RowDone[sheet1RowIndex] == True:
                 
                 continue
@@ -175,6 +189,7 @@ def do():
 
 
         for sheet2RowIndex in range(1,inSheet2.maxRow+1):
+
             if sheet2RowDone[sheet2RowIndex] == True:
                 continue
                         
@@ -198,8 +213,11 @@ def do():
         
         print(traceback.format_exc())
     finally:
-        inBook.close()
-        outBook.close()
+        if inBook is not None:
+            inBook.close()
+        if outBook is not None:
+            
+            outBook.close()
         
         
 
