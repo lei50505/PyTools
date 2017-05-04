@@ -14,6 +14,7 @@ import time
 
 
 def do():
+    print("请等待...")
 
     inBook=None
     outBook=None
@@ -60,6 +61,8 @@ def do():
             sheet2RowDone[rowIndex]=False
 
         outSheetCount = 0
+
+        
 
 
         for sheet1RowIndex in inSheet1.diffNumRows:
@@ -124,7 +127,7 @@ def do():
                 vals.append(sheet1Val)
 
 
-
+        
         for val in vals:
 
 
@@ -152,7 +155,7 @@ def do():
                     
                     continue
                 outSheetCount +=1
-
+               
                 sheet2RowDone[sheet2RowIndex] = True
                 for sheet2ColIndex in range(1,inSheet2.maxCol+1):
                     sheet2Cell = inSheet2.cell(sheet2RowIndex,\
@@ -183,7 +186,7 @@ def do():
                     outCell = outSheet.cell(outSheetCount,\
                                              sheet1ColIndex)
                     outCell.setVal(sheet1Cell.val)
-
+                    
                     outCell.setBlue()
                     
 
@@ -191,9 +194,10 @@ def do():
         for sheet2RowIndex in range(1,inSheet2.maxRow+1):
 
             if sheet2RowDone[sheet2RowIndex] == True:
+                
                 continue
-                        
-            sheet2RowDone[sheet1RowIndex] = True
+                      
+            sheet2RowDone[sheet2RowIndex] = True
             outSheetCount +=1
             for sheet2ColIndex in range(1,inSheet2.maxCol+1):
                     sheet2Cell = inSheet2.cell(sheet2RowIndex,\
@@ -201,6 +205,7 @@ def do():
                     outCell = outSheet.cell(outSheetCount,\
                                              sheet2ColIndex)
                     outCell.setVal(sheet2Cell.val)
+                    
 
                     outCell.setRed()
         
@@ -209,19 +214,22 @@ def do():
         inBook.close()
         outBook.close()
         print("success")
+        time.sleep(2)
     except Exception:
         
         print(traceback.format_exc())
+        time.sleep(20)
     finally:
         if inBook is not None:
             inBook.close()
         if outBook is not None:
             
             outBook.close()
+            
         
         
 
-    time.sleep(2)
+    
         
     
 if __name__=="__main__":
