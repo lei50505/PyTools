@@ -121,6 +121,8 @@ class Sheet():
         self.numRowDict = None
         self.numRowList = None
 
+       
+
 
     def cell(self,row,col):
         if self.sheet is None:
@@ -247,6 +249,19 @@ class Sheet():
             if v == val:
                 ret.append(numRow)
         return ret
+
+    def copyRowFromSheet(self, srcSheet, rowIndex):
+        srcSheetMaxCol = srcSheet.maxCol
+        
+        for srcSheetColIndex in range(1, srcSheetMaxCol + 1):
+            sheet2Cell = inSheet2.cell(sheet2RowIndex,\
+                                             sheet2ColIndex)
+            outCell = outSheet.cell(outSheetCount,\
+                                             sheet2ColIndex)
+            outCell.setVal(sheet2Cell.getVal())
+
+            outCell.setRed()
+            outCell.setTextFormat()
         
   
 
@@ -314,3 +329,8 @@ def loadBook(filePath):
     book = Book(workBook)
     return 0, None, book
 
+if "__main__" == __name__:
+    book = createBook()
+    ret,err,sheet = book.active()
+    print(sheet.maxCol)
+    
