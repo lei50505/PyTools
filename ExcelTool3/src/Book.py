@@ -1,9 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-sys.path.append(".")
-
 from openpyxl import *
 from openpyxl.styles import *
 from openpyxl.styles.numbers import *
