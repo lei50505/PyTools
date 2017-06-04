@@ -144,23 +144,61 @@ def do():
                     
         
         print("正在处理没有匹配的项目")
+
+
+        rowDataList = []
         for sheet1RowIndex in range(1,sheet1MaxRow+1):
 
             if sheet1RowDone[sheet1RowIndex] == True:
                 
                 continue
-            
+
+            rowData = {}
+            cellVal = inSheet1.cell(sheet1RowIndex, inSheet1.numColIndex).getFloatVal()
+            if cellVal is None:
+                cellVal = 0
+            if cellVal < 0:
+                cellVal = 0 - cellVal
+            rowData["key"] = cellVal
+            rowData["data"] = sheet1RowIndex
+            rowDataList.append(rowData)
+
+        rowDataList = sorted(rowDataList, key=lambda item:item["key"])
+        
+        rowIndexList = []
+        for rowItem in rowDataList:
+            rowIndexList.append(rowItem["data"])
+
+
+        for sheet1RowIndex in rowIndexList:
+        
 
             sheet1RowDone[sheet1RowIndex] = True
             outSheet.copyRowFromSheet(inSheet1,sheet1RowIndex,"blue")
                     
 
+        rowIndexList = []
+        rowDataList = []
 
         for sheet2RowIndex in range(1,sheet2MaxRow+1):
 
             if sheet2RowDone[sheet2RowIndex] == True:
                 
                 continue
+            rowData = {}
+            cellVal = inSheet2.cell(sheet2RowIndex, inSheet2.numColIndex).getFloatVal()
+            if cellVal is None:
+                cellVal = 0
+            if cellVal < 0:
+                cellVal = 0 - cellVal
+            rowData["key"] = cellVal
+            rowData["data"] = sheet2RowIndex
+            rowDataList.append(rowData)
+        rowDataList = sorted(rowDataList, key=lambda item:item["key"])
+        for rowItem in rowDataList:
+            rowIndexList.append(rowItem["data"])
+
+        for sheet2RowIndex in rowIndexList:
                       
             sheet2RowDone[sheet2RowIndex] = True
             outSheet.copyRowFromSheet(inSheet2,sheet2RowIndex,"red")  
