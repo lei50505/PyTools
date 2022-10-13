@@ -247,7 +247,7 @@ def createBook():
 def loadBook(filePath):
 
     workBook = load_workbook(filePath, read_only = False, keep_vba = False, \
-                    data_only = True, guess_types = False, keep_links = False)
+                    data_only = True, keep_links = False)
     book = Book(workBook)
     return book
 
