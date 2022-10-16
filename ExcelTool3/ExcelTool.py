@@ -6,7 +6,7 @@ import sys
 
 import traceback
 
-from src.Book import *
+from book import *
 import time
 
 def do():
